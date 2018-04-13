@@ -4,6 +4,8 @@
 const yaml = require('js-yaml');
 const fs   = require('fs');
 const Feed = require('./pricefeed.js');
+const util = require('util');
+
     try {
         (async function() {
         var config = yaml.safeLoad(fs.readFileSync('./fox.yaml', 'utf8'));        

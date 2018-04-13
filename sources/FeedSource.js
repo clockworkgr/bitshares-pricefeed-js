@@ -57,7 +57,7 @@ class FeedSource {
     }
     updateCache(feed) {
         var cacheFile=this.getCacheFilename();
-        console.log('here'+ cacheFile);
+        //console.log('here'+ cacheFile);
         try {
             fs.writeFileSync(cacheFile ,JSON.stringify(feed));
             return true;

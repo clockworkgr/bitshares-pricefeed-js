@@ -49,15 +49,17 @@ class Feed {
     async getProducer() {
        this.producer=await Apis.instance("wss://bitshares.openledger.info/ws", true).init_promise.then((res) => {
            this.Api=Apis.instance();
-            this.Api.db_api().exec( "get_account_by_name", [this.config.producer] );
+            return this.Api.db_api().exec( "get_account_by_name", [this.config.producer] );
         });
         return this.producer;
     }
     get_my_current_feed(asset) {
-        var feeds=asset.feeds;
+        var feeds=asset.bitasset_data.feeds;
+        
         for (var feed in feeds) {
-            if(feeds[feed]['producer']['id']=this.producer['id']) {
-                return feeds[feed];
+          
+            if(feeds[feed][0]==this.producer['id']) {
+                return feeds[feed][1][1];
             }
         }
     }
@@ -108,11 +110,12 @@ class Feed {
         if (((new Date()).getTime() - feed_age) > this.assetconf(symbol, "maxage")) {
             this.price_result[symbol]["flags"].push("over_max_age");
         }
-        console.log('done');
     }
-    async get_cer(symbol,price) {
+    get_cer(symbol,price) {
         
-        if ((this.config['assets'][symbol]!=undefined) && (this.config['assets'][symbol]['core_exchange_factor']!=undefined)) {
+        //if ((this.config['assets'][symbol]!=undefined) && (this.config['assets'][symbol]['core_exchange_factor']!=undefined)) {
+        if ((this.config['assets'][symbol]!=undefined) ) {
+            
             return price * this.assetconf(symbol,'core_exchange_factor');
         }
         if ((this.config['assets'][symbol]!=undefined) && (this.config['assets'][symbol]['core_exchange_rate']!=undefined)) {
@@ -139,7 +142,9 @@ class Feed {
         for (var exchange in this.config.exchanges) {
             if (this.config.exchanges[exchange].enable) {
                 var instance=new (require('./sources/'+this.config.exchanges[exchange].klass))(this.config.exchanges[exchange]);
+                
                 var afeed=await instance.fetch();
+                
                 this.feed[exchange]=afeed;
             }
         }   
@@ -168,15 +173,15 @@ class Feed {
     }
     addPrice(base,quote,price,volume,sources) {
         if (this.data[base]==undefined) {
-            this.data[base]={};
+            this.data[base]=[];
         }
         if (this.data[base][quote]==undefined) {
-            this.data[base][quote]={};
+            this.data[base][quote]=[];
         }
         var flat_list=[];
         for (var i=0;i<sources.length;i++) {
             var source=sources[i];
-            if (Array,isArray(source)) {
+            if (Array.isArray(source)) {
                 for (var j=0;j<source.length;j++) {
                     flat_list.push(source[j]);
                 }
@@ -184,6 +189,7 @@ class Feed {
                 flat_list.push(source);
             }
         }
+        
         this.data[base][quote].push({
                 "price": price,
                 "volume": volume,
@@ -194,8 +200,10 @@ class Feed {
         if (this.config['exchanges']==undefined) {
             return;
         }
-        for (var datasource in this.assetconf(symbol,'sources')) {
-            
+       
+        for (var dsidx in this.assetconf(symbol,'sources')) {
+            var datasource=this.assetconf(symbol,'sources')[dsidx];
+
             if (this.config['exchanges'][datasource].enable==false) {
                 continue;
             }
@@ -219,7 +227,9 @@ class Feed {
                     var sources=[];
                     sources.push(datasource);
                     this.addPrice(base,quote,this.feed[datasource][base][quote]['price'],this.feed[datasource][base][quote]['volume'],sources);
+            
                     if ((this.feed[datasource][base][quote]['price']>0) && (this.feed[datasource][base][quote]['volume'] > 0)) {
+                    
                         this.addPrice(quote,base,1.0/this.feed[datasource][base][quote]['price'],this.feed[datasource][base][quote]['volume']*this.feed[datasource][base][quote]['price'],sources);
                     }
                 }
@@ -228,17 +238,24 @@ class Feed {
     }
     derive2Markets(asset,target_symbol) {
         var symbol=asset['symbol'];
-        for (var interasset in this.config['intermediate_assets']) {
+        
+        for (var iaidx in this.config['intermediate_assets']) {
+            var interasset=this.config['intermediate_assets'][iaidx];
             if (interasset==symbol) {
                 continue;
             }
-            for (var ratio in (this.data[symbol][interasset]))  {
+            
+            for (var ridx in (this.data[symbol][interasset]))  {
+                var ratio= this.data[symbol][interasset][ridx];
+                
                 if ((this.data[interasset]!=undefined) && (this.data[interasset][target_symbol]!=undefined)) {
+                
                     for (var idx=0; idx<this.data[interasset][target_symbol].length;idx++) {
+                
                         if (this.data[interasset][target_symbol][idx]['volume']==0) {
                             continue;
                         }
-                        var sources=this.data[interasset][target_symbol][idx]['sources'].concat(ratio['sources']);
+                        var sources=this.data[interasset][target_symbol][idx]['sources'].concat(ratio['sources']);                        
                         this.addPrice(symbol,target_symbol,this.data[interasset][target_symbol][idx]['price']*ratio['price'],this.data[interasset][target_symbol][idx]['price']*ratio['price'],sources);
                     }
                 }
@@ -248,8 +265,45 @@ class Feed {
     get_prices() {
         return this.price_result;
     }
-    derive3Markets(asset,target_symbol) {
-        //todo
+    derive3Markets(asset,target_symbol) {        
+        /*
+        var symbol = asset['symbol'];
+
+        if "intermediate_assets" not in self.config or not self.config["intermediate_assets"]:
+            return
+
+        if self.assetconf(symbol, "derive_across_3markets"):
+            for interassetA in self.config["intermediate_assets"]:
+                for interassetB in self.config["intermediate_assets"]:
+                    if interassetB == symbol:
+                        continue
+                    if interassetA == symbol:
+                        continue
+                    if interassetA == interassetB:
+                        continue
+
+                    for ratioA in self.data[interassetB][interassetA]:
+                        for ratioB in self.data[symbol][interassetB]:
+                            if (
+                                interassetA not in self.data or
+                                target_symbol not in self.data[interassetA]
+                            ):
+                                continue
+                            for idx in range(0, len(self.data[interassetA][target_symbol])):
+                                if self.data[interassetA][target_symbol][idx]["volume"] == 0:
+                                    continue
+                                self.addPrice(
+                                    symbol,
+                                    target_symbol,
+                                    float(self.data[interassetA][target_symbol][idx]["price"] * ratioA["price"] * ratioB["price"]),
+                                    float(self.data[interassetA][target_symbol][idx]["volume"] * ratioA["price"] * ratioB["price"]),
+                                    sources=[
+                                        self.data[interassetA][target_symbol][idx]["sources"],
+                                        ratioA["sources"],
+                                        ratioB["sources"]
+                                    ]
+                                )
+                                */
     }
     async derive(assets_derive) {
        
@@ -265,7 +319,7 @@ class Feed {
 
         
         for (var symbol in assets_derive) {
-            this.type_extern(symbol);
+            await this.type_extern(symbol);
         }
         for (var symbol in assets_derive) {
             //TODO :type_intern not implemented;
@@ -280,12 +334,12 @@ class Feed {
            await  this.obtain_price_change(symbol)
             await this.obtain_flags(symbol)
         }
-        console.log(util.inspect(this.price_result,true,null));
         return this.price_result
 
     }
     async type_extern(symbol) {
     
+        
         var asset=await this.Api.db_api().exec( "lookup_asset_symbols", [[symbol]] ).then((res)=>{
             let asset=res[0];                        
             return this.Api.db_api().exec( "get_objects", [[asset.id]] );            
@@ -296,7 +350,7 @@ class Feed {
             return;
         }
         asset['bitasset_data']=await this.Api.db_api().exec( "get_objects", [[asset['bitasset_data_id']]] ).then((res) => { return res[0]; });
-        //console.log(asset);
+        
         var short_backing_asset = await this.Api.db_api().exec( "lookup_asset_symbols", [[asset["bitasset_data"]["options"]["short_backing_asset"]]] ).then((res)=>{
             let asset=res[0];                        
             return this.Api.db_api().exec( "get_objects", [[asset.id]] );            
@@ -306,7 +360,8 @@ class Feed {
         var backing_symbol = short_backing_asset["symbol"];
         asset["short_backing_asset"] = short_backing_asset;
 
-        if ((this.assetconf(symbol, "type")!='extern') ||  (this.assetconf(symbol, "type")!='alias')) {
+        if ((this.assetconf(symbol, "type")!='extern') &&  (this.assetconf(symbol, "type")!='alias')) {
+           
             return;
         }
         var alias;
@@ -323,8 +378,7 @@ class Feed {
         }
 
     
-        this.reset()
-
+        this.reset();
         
         this.appendOriginalPrices(symbol)
         this.derive2Markets(asset, backing_symbol)
@@ -335,8 +389,8 @@ class Feed {
             console.log("'"+alias+"' not in this.data");
             return;
         }
-        if (this.data[alias][backing_symbol]==undefined) {    
-            console.log("backing symbol '"+backing_symbol+"' not in this.data['"+alias+"']");        
+        if (this.data[alias][backing_symbol]==undefined) {  
+            console.log("'"+alias+"' not in this.data['"+backing_symbol+"']");  
             return;
         }
         var assetvolume=[];
@@ -345,7 +399,7 @@ class Feed {
             assetvolume.push(this.data[alias][backing_symbol][v]['volume']);
             assetprice.push(this.data[alias][backing_symbol][v]['price']);
         }
-
+        var price_median,price_mean,price_weighted,price_std;
         if (assetvolume.length > 1) {
             price_median = math.median(assetprice);
             price_mean = math.mean(assetprice);
@@ -361,7 +415,8 @@ class Feed {
             return;
         }
 
-        metric = this.assetconf(symbol, "metric")
+        var metric = this.assetconf(symbol, "metric")
+        var p;
         if (metric == "median") {
             p = price_median;
         }else if (metric == "mean") {
@@ -386,7 +441,7 @@ class Feed {
             "short_backing_symbol": backing_symbol,
             "mssr": this.assetconf(symbol, "maximum_short_squeeze_ratio"),
             "mcr": this.assetconf(symbol, "maintenance_collateral_ratio"),
-            "log": this.data
+            //"log": this.data
         }
     }
 }
