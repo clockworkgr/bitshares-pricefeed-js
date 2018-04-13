@@ -1,0 +1,36 @@
+{
+  "name": "bitshares-pricefeed-js",
+  "version": "0.0.1",
+  "description": "A BitShares pricefeed script in JS ported from @xeroc's bitshares-pricefeed",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clockworkgr/bitshares-pricefeed-js.git"
+  },
+  "keywords": [
+    "bitshares",
+    "pricefeed",
+    "witness"
+  ],
+  "author": "clockwork",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/clockworkgr/bitshares-pricefeed-js/issues"
+  },
+  "homepage": "https://github.com/clockworkgr/bitshares-pricefeed-js#readme",
+  "dependencies": {
+    "bitcoinaverage": "^1.0.0",
+    "bitsharesjs": "^1.5.8",
+    "fs-extra": "^5.0.0",
+    "js-yaml": "^3.11.0",
+    "mathjs": "^4.1.1",
+    "node-binance-api": "^0.4.27",
+    "quandl": "0.0.6",
+    "request": "^2.85.0",
+    "request-promise-native": "^1.0.5",
+    "table": "^4.0.3"
+  }
+}
