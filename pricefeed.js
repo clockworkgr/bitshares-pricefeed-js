@@ -1,6 +1,7 @@
 const {Apis} = require("bitsharesjs-ws");
 const math = require('mathjs');
 const util = require('util');
+const Price = require('../lib/price.js');
 
 function weightedAvg(arrValues, arrWeights) {
 
@@ -389,8 +390,8 @@ class Feed {
             console.log("'"+alias+"' not in this.data");
             return;
         }
-        if (this.data[alias][backing_symbol]==undefined) {  
-            console.log("'"+alias+"' not in this.data['"+backing_symbol+"']");  
+        if (this.data[alias][backing_symbol]==undefined) {              
+            console.log("backing symbol '"+backing_symbol+"' not in this.data['"+alias+"']");        
             return;
         }
         var assetvolume=[];
