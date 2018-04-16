@@ -1,7 +1,7 @@
 const {Apis} = require("bitsharesjs-ws");
 const math = require('mathjs');
 const util = require('util');
-const Price = require('../lib/price.js');
+const Price = require('./lib/price.js');
 
 function weightedAvg(arrValues, arrWeights) {
 
@@ -75,18 +75,21 @@ class Feed {
             return;
         }
         asset['bitasset_data']=await this.Api.db_api().exec( "get_objects", [[asset['bitasset_data_id']]] ).then((res) => { return res[0]; });
+        
         var price=this.price_result[symbol];
         var newPrice=price['price'];
         var current_feed=this.get_my_current_feed(asset);
+        current_feed['settlement_price'].base['precision']=asset.precision;
+        current_feed['settlement_price'].quote['precision']=5;
         var oldPrice;
-        if ((current_feed!=undefined) && (current_feed['settlement_price']!=undefined)) {
-            oldPrice=current_feed['settlement_price'];
+        if ((current_feed!==undefined) && (current_feed['settlement_price']!==undefined)) {
+            oldPrice=new Price(current_feed['settlement_price']).Float();
         }else{
             oldPrice=Infinity;
         }
-        
-        this.price_result[symbol]['priceChange'] = (oldPrice - newPrice) / newPrice * 100.0;
-        this.price_result[symbol]['current_feed'] = current_feed;
+        this.price_result[symbol]['new_feed'] = Price.fromFloat(+newPrice.toFixed(current_feed['settlement_price'].base['precision']),current_feed['settlement_price'].base,current_feed['settlement_price'].quote);
+        this.price_result[symbol]['priceChange'] = (oldPrice - newPrice) / newPrice * 100.0;        
+        this.price_result[symbol]['current_feed'] = current_feed;        
         this.price_result[symbol]['global_feed'] = asset['bitasset_data']['current_feed'];
         return;
     }
@@ -103,7 +106,7 @@ class Feed {
             this.price_result[symbol]["flags"].push("skip_change");
         }
         var feed_age;
-        if (this.price_result[symbol]["current_feed"]!=undefined){
+        if (this.price_result[symbol]["current_feed"]!==undefined){
             feed_age = Date.parse(this.price_result[symbol]["current_feed"]["date"]);
         } else {
             feed_age=0;
@@ -115,13 +118,12 @@ class Feed {
     get_cer(symbol,price) {
         
         //if ((this.config['assets'][symbol]!=undefined) && (this.config['assets'][symbol]['core_exchange_factor']!=undefined)) {
-        if ((this.config['assets'][symbol]!=undefined) ) {
-            
+        if ((this.config['assets'][symbol]!==undefined) ) {
             return price * this.assetconf(symbol,'core_exchange_factor');
         }
-        if ((this.config['assets'][symbol]!=undefined) && (this.config['assets'][symbol]['core_exchange_rate']!=undefined)) {
+        if ((this.config['assets'][symbol]!==undefined) && (this.config['assets'][symbol]['core_exchange_rate']!==undefined)) {
             cer = this.config["assets"][symbol]["core_exchange_rate"]
-            if ((cer['orientation']==undefined) || (cer['factor']==undefined) || (cer['ref_ticker']==undefined)) {
+            if ((cer['orientation']===undefined) || (cer['factor']===undefined) || (cer['ref_ticker']===undefined)) {
                 throw('Missing one of required settings for cer: {}');
             }
             
@@ -136,7 +138,7 @@ class Feed {
         }
     }
     async fetch() {
-        if ((this.config['exchanges']==undefined)  || (this.config['exchanges'].length==0)) {
+        if ((this.config['exchanges']===undefined)  || (this.config['exchanges'].length==0)) {
             return;
         }
          
@@ -151,17 +153,17 @@ class Feed {
         }   
     }
     assethasconf(symbol,parameter) {
-        if ((this.config.assets[symbol]!=undefined) && (this.config.assets[symbol][parameter]!=undefined)) {
+        if ((this.config.assets[symbol]!==undefined) && (this.config.assets[symbol][parameter]!==undefined)) {
             return true;
         }else{
             return false;
         }
     }
     assetconf(symbol,parameter,no_fail) {
-        if ((this.config.assets[symbol]!=undefined) && (this.config.assets[symbol][parameter]!=undefined)) {
+        if ((this.config.assets[symbol]!==undefined) && (this.config.assets[symbol]!==null) && (this.config.assets[symbol][parameter]!==undefined)) {
             return this.config.assets[symbol][parameter];
         }else{
-            if ((this.config['default']!=undefined) && (this.config['default'][parameter]!=undefined)) {
+            if ((this.config['default']!==undefined) && (this.config['default'][parameter]!==undefined)) {
                 return this.config['default'][parameter];
             }else{
                 if (no_fail) {
@@ -173,10 +175,10 @@ class Feed {
         }
     }
     addPrice(base,quote,price,volume,sources) {
-        if (this.data[base]==undefined) {
+        if (this.data[base]===undefined) {
             this.data[base]=[];
         }
-        if (this.data[base][quote]==undefined) {
+        if (this.data[base][quote]===undefined) {
             this.data[base][quote]=[];
         }
         var flat_list=[];
@@ -198,7 +200,7 @@ class Feed {
         });
     }
     appendOriginalPrices(symbol) {
-        if (this.config['exchanges']==undefined) {
+        if (this.config['exchanges']===undefined) {
             return;
         }
        
@@ -208,7 +210,7 @@ class Feed {
             if (this.config['exchanges'][datasource].enable==false) {
                 continue;
             }
-            if (this.feed[datasource]==undefined) {
+            if (this.feed[datasource]===undefined) {
                 continue;
             }
             for (var base in this.feed[datasource]) {
@@ -219,7 +221,7 @@ class Feed {
                     if (quote=='response') {
                         continue;
                     }
-                    if ((base==undefined) || (quote==undefined)) {
+                    if ((base===undefined) || (quote===undefined)) {
                         continue;
                     }
                     if (this.feed[datasource][base][quote]['volume']==0) {
@@ -249,7 +251,7 @@ class Feed {
             for (var ridx in (this.data[symbol][interasset]))  {
                 var ratio= this.data[symbol][interasset][ridx];
                 
-                if ((this.data[interasset]!=undefined) && (this.data[interasset][target_symbol]!=undefined)) {
+                if ((this.data[interasset]!==undefined) && (this.data[interasset][target_symbol]!==undefined)) {
                 
                     for (var idx=0; idx<this.data[interasset][target_symbol].length;idx++) {
                 
@@ -328,7 +330,7 @@ class Feed {
         }
         
         for (var symbol in assets_derive) {
-            if (this.price_result[symbol]==undefined) {                
+            if (this.price_result[symbol]===undefined) {                
                 continue;
             }
             
@@ -386,11 +388,11 @@ class Feed {
         //TODO 3 Markets not implemented yet
         //this.derive3Markets(asset, backing_symbol)
 
-        if (this.data[alias]==undefined) {
+        if (this.data[alias]===undefined) {
             console.log("'"+alias+"' not in this.data");
             return;
         }
-        if (this.data[alias][backing_symbol]==undefined) {              
+        if (this.data[alias][backing_symbol]===undefined) {              
             console.log("backing symbol '"+backing_symbol+"' not in this.data['"+alias+"']");        
             return;
         }

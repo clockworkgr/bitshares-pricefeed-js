@@ -1,12 +1,11 @@
 const FeedSource =require('./FeedSource.js');
-const {Apis} = require("bitsharesjs-ws");
+const request = require('request-promise-native');
 
 
-class Graphene extends FeedSource {
+class Lbank extends FeedSource {
     constructor(config) {
         super(config);
         this.init();
-        
     }
     init() {           
       
@@ -26,22 +25,20 @@ class Graphene extends FeedSource {
                 if (quote==base) {
                     continue;
                 }
-                var result=await Apis.instance(this.options.url, true).init_promise.then((res) => {                    
-                    return Apis.instance().db_api().exec( "get_ticker", [base,quote] );
-                });
+                var url = "https://api.lbank.info/v1/ticker.do?symbol="+quote+"_"+base;
+                var result= await request(url);                
+                result=JSON.parse(result);
                 if((this.options.quoteNames!=undefined) && (this.options.quoteNames[quote]!=undefined)) {
                     quote=this.options.quoteNames[quote];
                 }
-                if ((result['latest']>0) && (result['quote_volume']>0)) {
-                    feed[base][quote]= {
-                        "price": result['latest'],
-                        "volume": result['quote_volume']*this.options.scaleVolumeBy
-                    };
-                }
+                feed[base][quote]= {
+                    "price": result['ticker']['latest'],
+                    "volume": result['ticker']['vol']*this.options.scaleVolumeBy
+                };
             }
         }
         
         return feed;
     }
 }
-module.exports=Graphene;
+module.exports=Lbank;
