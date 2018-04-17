@@ -25,8 +25,8 @@ class Lbank extends FeedSource {
                 if (quote==base) {
                     continue;
                 }
-                var url = "https://api.lbank.info/v1/ticker.do?symbol="+quote+"_"+base;
-                var result= await request(url);                
+                var url = "https://api.lbank.info/v1/ticker.do?symbol="+quote.toLowerCase()+"_"+base.toLowerCase();
+                var result= await request(url);                                
                 result=JSON.parse(result);
                 if((this.options.quoteNames!=undefined) && (this.options.quoteNames[quote]!=undefined)) {
                     quote=this.options.quoteNames[quote];
