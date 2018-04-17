@@ -37,5 +37,8 @@ nbproject
 validation-status.json
 validation-report.json
 
+# config file to ignore
+fox.yaml
+
 # Folders to ignore
 node_modules
