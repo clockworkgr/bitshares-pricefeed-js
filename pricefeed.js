@@ -1,7 +1,7 @@
 const {Apis} = require("bitsharesjs-ws");
 const math = require('mathjs');
 const util = require('util');
-const Price = require('./lib/price.js');
+const Price = require('./lib/Price.js');
 
 function weightedAvg(arrValues, arrWeights) {
 
