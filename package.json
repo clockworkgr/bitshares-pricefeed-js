@@ -29,6 +29,7 @@
     "js-yaml": "^3.11.0",
     "mathjs": "^4.1.1",
     "moment": "^2.22.1",
+    "moment-timezone": "^0.5.16",
     "node-binance-api": "^0.4.27",
     "quandl": "0.0.6",
     "request": "^2.85.0",

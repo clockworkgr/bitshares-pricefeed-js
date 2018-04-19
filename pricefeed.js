@@ -60,7 +60,9 @@ class Feed {
         for (var feed in feeds) {
           
             if(feeds[feed][0]==this.producer['id']) {
-                return feeds[feed][1][1];
+                var myfeed=feeds[feed][1][1];
+                myfeed['date']=feeds[feed][1][0];
+                return myfeed;
             }
         }
     }

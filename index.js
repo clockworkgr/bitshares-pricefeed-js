@@ -7,7 +7,7 @@ const Feed = require('./pricefeed.js');
 const util = require('util');
 const table =require('table').table;
 const chalk = require('chalk');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const Price = require('./lib/Price.js');
 
     try {
@@ -60,22 +60,40 @@ const Price = require('./lib/Price.js');
             },            
             columns: {
                 0: {
-                    alignment: 'center'
+                    alignment: 'right',
+                    width: 7, 
+                    paddingLeft: 1,
+                    paddingRight: 1
                 },
                 1: {
-                    alignment: 'center'
+                    alignment: 'right',
+                    width: 7, 
+                    paddingLeft: 1,
+                    paddingRight: 1
                 },
                 2: {
-                    alignment: 'right'
+                    alignment: 'right',
+                    width: 13, 
+                    paddingLeft: 1,
+                    paddingRight: 1
                 },
                 3: {
-                    alignment: 'center'
+                    alignment: 'right',
+                    width: 6, 
+                    paddingLeft: 1,
+                    paddingRight: 1
                 },
                 4: {
-                    alignment: 'right'
+                    alignment: 'right',
+                    width: 24, 
+                    paddingLeft: 1,
+                    paddingRight: 1
                 },
                 5: {
-                    alignment: 'left'
+                    alignment: 'left',
+                    width: 40, 
+                    paddingLeft: 1,
+                    paddingRight: 1
                 }
             }
         };
@@ -84,7 +102,7 @@ const Price = require('./lib/Price.js');
         console.log(output);
     }
     function printPrices(prices) {
-        var tabledata=[['symbol','collateral','new price','cer','mean','median','wgt. avg','wgt. std(#)','blockchain','mssr','mcr','my last price','last update']];
+        var tabledata=[['symbol','backing','new price','cer','mean','median','wgt. avg','wgt. std(#)','blockchain','mssr','mcr','my last price','last update']];
         for (var symbol in prices) {
             var feed=prices[symbol];
             if (feed==undefined) {
@@ -93,8 +111,8 @@ const Price = require('./lib/Price.js');
             myprice=feed['price'];
             blockchain=new Price(feed['global_feed']['settlement_price']).Float();
             if (feed['current_feed']!=undefined) {
-                last=new Price(feed['current_feed']['settlement_price']).Float();
-                age=moment(feed['current_feed']['date']).fromNow();
+                last=new Price(feed['current_feed']['settlement_price']).Float();               
+                age=moment.tz(feed['current_feed']['date'],'UTC').fromNow();
             }else{
                 last= -1;
                 age='Unknown';
@@ -122,22 +140,82 @@ const Price = require('./lib/Price.js');
             },            
             columns: {
                 0: {
-                    alignment: 'center'
+                    alignment: 'right',
+                    width: 7, 
+                    paddingLeft: 1,
+                    paddingRight: 1
                 },
                 1: {
-                    alignment: 'center'
+                    alignment: 'right',
+                    width: 7, 
+                    paddingLeft: 1,
+                    paddingRight: 1
                 },
                 2: {
-                    alignment: 'right'
+                    alignment: 'right',
+                    width: 13, 
+                    paddingLeft: 1,
+                    paddingRight: 1
                 },
                 3: {
-                    alignment: 'center'
+                    alignment: 'right',
+                    width: 13, 
+                    paddingLeft: 1,
+                    paddingRight: 1
                 },
                 4: {
-                    alignment: 'right'
+                    alignment: 'right',
+                    width: 22, 
+                    paddingLeft: 1,
+                    paddingRight: 1
                 },
                 5: {
-                    alignment: 'left'
+                    alignment: 'right',
+                    width: 22, 
+                    paddingLeft: 1,
+                    paddingRight: 1
+                },
+                6: {
+                    alignment: 'right',
+                    width: 22, 
+                    paddingLeft: 1,
+                    paddingRight: 1
+                },
+                7: {
+                    alignment: 'right',
+                    width: 12, 
+                    paddingLeft: 1,
+                    paddingRight: 1
+                },
+                8: {
+                    alignment: 'right',
+                    width: 22, 
+                    paddingLeft: 1,
+                    paddingRight: 1
+                },
+                9: {
+                    alignment: 'right',
+                    width: 5, 
+                    paddingLeft: 1,
+                    paddingRight: 1
+                },
+                10: {
+                    alignment: 'right',
+                    width: 5, 
+                    paddingLeft: 1,
+                    paddingRight: 1
+                },
+                11: {
+                    alignment: 'right',
+                    width: 22, 
+                    paddingLeft: 1,
+                    paddingRight: 1
+                },
+                12: {
+                    alignment: 'right',
+                    width: 18, 
+                    paddingLeft: 1,
+                    paddingRight: 1
                 }
             }
         };
