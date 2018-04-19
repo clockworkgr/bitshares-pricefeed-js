@@ -90,7 +90,9 @@ class Feed {
         this.price_result[symbol]['new_feed'] = Price.fromFloat(+newPrice.toFixed(current_feed['settlement_price'].base['precision']),current_feed['settlement_price'].base,current_feed['settlement_price'].quote);
         this.price_result[symbol]['priceChange'] = (oldPrice - newPrice) / newPrice * 100.0;        
         this.price_result[symbol]['current_feed'] = current_feed;        
-        this.price_result[symbol]['global_feed'] = asset['bitasset_data']['current_feed'];
+        this.price_result[symbol]['global_feed'] = asset['bitasset_data']['current_feed'];        
+        this.price_result[symbol]['global_feed']['settlement_price'].base['precision']=asset.precision;
+        this.price_result[symbol]['global_feed']['settlement_price'].quote['precision']=5;
         return;
     }
     obtain_flags(symbol) {
@@ -444,7 +446,7 @@ class Feed {
             "short_backing_symbol": backing_symbol,
             "mssr": this.assetconf(symbol, "maximum_short_squeeze_ratio"),
             "mcr": this.assetconf(symbol, "maintenance_collateral_ratio"),
-            //"log": this.data
+            "log": this.data
         }
     }
 }
