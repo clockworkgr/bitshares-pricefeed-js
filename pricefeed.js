@@ -48,7 +48,7 @@ class Feed {
         }
     }
     async getProducer() {
-       this.producer=await Apis.instance("wss://bitshares.openledger.info/ws", true).init_promise.then((res) => {
+       this.producer=await Apis.instance("wss://bts-seoul.clockwork.gr/ws", true).init_promise.then((res) => {
            this.Api=Apis.instance();
             return this.Api.db_api().exec( "get_account_by_name", [this.config.producer] );
         });
