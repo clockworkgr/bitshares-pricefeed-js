@@ -2,6 +2,11 @@ const {Apis} = require("bitsharesjs-ws");
 const math = require('mathjs');
 const util = require('util');
 const Price = require('./lib/Price.js');
+const chalk = require('chalk');
+const argv = require('minimist')(process.argv.slice(2));
+const Logger= require('./lib/Logger.js');
+let logger= new Logger(argv['d']);
+
 
 function weightedAvg(arrValues, arrWeights) {
 
@@ -48,8 +53,9 @@ class Feed {
         }
     }
     async getProducer() {
-       this.producer=await Apis.instance("wss://bts-seoul.clockwork.gr/ws", true).init_promise.then((res) => {
+       this.producer=await Apis.instance("wss://bitshares.openledger.info/ws", true).init_promise.then((res) => {
            this.Api=Apis.instance();
+           logger.transient('Connected to API node: wss://bitshares.openledger.info/ws');
             return this.Api.db_api().exec( "get_account_by_name", [this.config.producer] );
         });
         return this.producer;
@@ -326,7 +332,9 @@ class Feed {
 
         
         for (var symbol in assets_derive) {
+            logger.verbose('Calculating price for: '+symbol+'...');
             await this.type_extern(symbol);
+            logger.verbose('Price for: '+symbol+' calculated.');
         }
         for (var symbol in assets_derive) {
             //TODO :type_intern not implemented;
@@ -337,31 +345,37 @@ class Feed {
             if (this.price_result[symbol]===undefined) {                
                 continue;
             }
-            
-           await  this.obtain_price_change(symbol)
-            await this.obtain_flags(symbol)
+            logger.verbose('Calculating price change for: '+symbol+'...');
+           await  this.obtain_price_change(symbol);
+            await this.obtain_flags(symbol);
+            logger.verbose('Price change for: '+symbol+' calculated.');
         }
         return this.price_result
 
     }
     async type_extern(symbol) {
     
-        
+        logger.info('Deriving '+symbol+' price feed.');
+        logger.transient('Querying blockchain...');
         var asset=await this.Api.db_api().exec( "lookup_asset_symbols", [[symbol]] ).then((res)=>{
+            logger.transient('Got asset data...');
             let asset=res[0];                        
             return this.Api.db_api().exec( "get_objects", [[asset.id]] );            
         }).then((assetstats)=> {
+            logger.transient('Got asset statistics...');
             return assetstats[0];
         }); 
         if (asset['is_bitasset']==false) {
             return;
         }
-        asset['bitasset_data']=await this.Api.db_api().exec( "get_objects", [[asset['bitasset_data_id']]] ).then((res) => { return res[0]; });
+        asset['bitasset_data']=await this.Api.db_api().exec( "get_objects", [[asset['bitasset_data_id']]] ).then((res) => {         logger.transient('Got bitasset data...'); return res[0]; });
         
         var short_backing_asset = await this.Api.db_api().exec( "lookup_asset_symbols", [[asset["bitasset_data"]["options"]["short_backing_asset"]]] ).then((res)=>{
+            logger.transient('Got backing asset data...');
             let asset=res[0];                        
             return this.Api.db_api().exec( "get_objects", [[asset.id]] );            
         }).then((assetstats)=> {
+            logger.transient('Got backing asset statistics...');
             return assetstats[0];
         }); 
         var backing_symbol = short_backing_asset["symbol"];
@@ -375,15 +389,16 @@ class Feed {
         if (this.assetconf(symbol, "type") == "alias") {
             alias = this.assetconf(symbol, "alias");
             asset = await this.Api.db_api().exec( "lookup_asset_symbols", [[alias]] ).then((res)=>{
+                logger.transient('Got aliased asset data...');
                 let asset=res[0];                        
                 return this.Api.db_api().exec( "get_objects", [[asset.id]] );            
             }).then((assetstats)=> {
+                logger.transient('Got aliased asset statistics...');
                 return assetstats[0];
             }); 
         }else{
             alias = symbol;
         }
-
     
         this.reset();
         
@@ -393,11 +408,11 @@ class Feed {
         //this.derive3Markets(asset, backing_symbol)
 
         if (this.data[alias]===undefined) {
-            console.log("'"+alias+"' not in this.data");
+            logger.warning("'"+alias+"' not in this.data");
             return;
         }
         if (this.data[alias][backing_symbol]===undefined) {              
-            console.log("backing symbol '"+backing_symbol+"' not in this.data['"+alias+"']");        
+            logger.warning("backing symbol '"+backing_symbol+"' not in this.data['"+alias+"']");        
             return;
         }
         var assetvolume=[];
@@ -418,7 +433,7 @@ class Feed {
             price_weighted = assetprice[0];
             price_std = 0;
         }else{
-            console.log("[Warning] No market route found for "+symbol+". Skipping price");
+            logger.warning("No market route found for "+symbol+". Skipping price.");
             return;
         }
 
@@ -436,10 +451,14 @@ class Feed {
 
         var cer = this.get_cer(symbol, p)
 
-        
+        logger.verbose('Adding pricefeed data for '+symbol+'.');
+        if ((this.config['assets'][symbol]!==undefined) ) {
+            var cef = this.assetconf(symbol,'core_exchange_factor');
+        }
         this.price_result[symbol] = {
             "price": p,
             "cer": cer,
+            "cef": cef,
             "mean": price_mean,
             "median": price_median,
             "weighted": price_weighted,

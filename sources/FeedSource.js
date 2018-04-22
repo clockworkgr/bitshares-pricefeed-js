@@ -1,7 +1,11 @@
-
 const fs  = require('fs-extra');
 const path = require('path');
 const os=require('os');
+const chalk = require('chalk');
+const argv = require('minimist')(process.argv.slice(2));
+const Logger= require('../lib/Logger.js');
+let logger= new Logger(argv['d']);
+
 class FeedSource {    
     constructor(config) {
         this.options={
@@ -12,27 +16,33 @@ class FeedSource {
             quotes: [],
             bases: []
         };
+        logger.transient(chalk.white.bold('Source: '+this.__proto__.constructor.name)+' - Initialising...');
         this.options=Object.assign(this.options,config);
         
     }
     
     async fetch() {
+        
         try {
+            logger.transient(chalk.white.bold('Source: '+this.__proto__.constructor.name)+' - Getting data from source...');            
             var feed = await this._fetch();
-            
+            logger.transient(chalk.white.bold('Source: '+this.__proto__.constructor.name)+' - Updating cache...');
             this.updateCache(feed)
+            logger.verbose(chalk.white.bold('Source: '+this.__proto__.constructor.name)+' - Source loaded.');
             return feed;
         }catch(e){
-            console.error(this.__proto__.constructor.name+': Could not load live data. Trying to recover from cache.\n'+e);            
+            logger.warning(chalk.white.bold('Source: '+this.__proto__.constructor.name)+' - Could not load live data. Trying to recover from cache.');
             if (this.options.allowFailure!=true) {
-                console.error(this.__proto__.constructor.name+': Exiting due to exchange importance.');
+                logger.warning(chalk.white.bold('Source: '+this.__proto__.constructor.name)+' - Exiting due to source importance (allowFailure is false).');
                 process.exit(1);
             }
         }
         try {
-            return this.recoverFromCache();            
+            let cached=this.recoverFromCache();            
+            logger.verbose(chalk.white.bold('Source: '+this.__proto__.constructor.name)+' - Recovered from cache.');
+            return cached;
         }catch(e){
-            console.error('We were unable to fetch live or cached data from '+this.__proto__.constructor.name+'. Skipping.\n'+e);
+            logger.warning(chalk.white.bold('Source: '+this.__proto__.constructor.name)+' - Unable to fetch live or cached data. Skipping.');
         }
         
     }
@@ -41,11 +51,11 @@ class FeedSource {
     }
     recoverFromCache() {
         var cacheFile=this.getCacheFilename();
-        console.log('this: '+cacheFile);
+        //console.log('this: '+cacheFile);
         try {
             return JSON.parse(fs.readFileSync(cacheFile ,'utf8'));
         }catch(e) {
-            console.error('Could not open cache file: '+this.__proto__.constructor.name);
+            logger.warning(chalk.white.bold('Source: '+this.__proto__.constructor.name)+' - Could not open cache file.');
             return {};
         }
     }
@@ -59,10 +69,11 @@ class FeedSource {
         var cacheFile=this.getCacheFilename();
         //console.log('here'+ cacheFile);
         try {
-            fs.writeFileSync(cacheFile ,JSON.stringify(feed));
+            fs.writeFileSync(cacheFile ,JSON.stringify(feed));            
+            logger.verbose(chalk.white.bold('Source: '+this.__proto__.constructor.name)+' - Cache file updated.');
             return true;
-        }catch(e) {
-            console.error('Could not write cache file: '+this.__proto__.constructor.name);
+        }catch(e) {            
+            logger.warning(chalk.white.bold('Source: '+this.__proto__.constructor.name)+' - Could not update cache file.');
             return false;
         }
     }

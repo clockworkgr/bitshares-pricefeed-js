@@ -1,5 +1,8 @@
 const FeedSource =require('./FeedSource.js');
 const  QuandlAPI = require("quandl");
+const argv = require('minimist')(process.argv.slice(2));
+const Logger= require('../lib/Logger.js');
+let logger= new Logger(argv['d']);
 
 class Quandl extends FeedSource {
     constructor(config) {
