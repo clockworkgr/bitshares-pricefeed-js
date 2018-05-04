@@ -1,5 +1,8 @@
 const FeedSource =require('./FeedSource.js');
 const ba = require('bitcoinaverage');
+const argv = require('minimist')(process.argv.slice(2));
+const Logger= require('../lib/Logger.js');
+let logger= new Logger(argv['d']);
 
 class BitcoinAverage extends FeedSource {
     constructor(config) {
