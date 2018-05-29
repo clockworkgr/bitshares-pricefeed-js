@@ -29,6 +29,10 @@ Switches:
 
 The yaml config file is the exact same format as the one used by xeroc's bitshares-pricefeed (https://github.com/xeroc/bitshares-pricefeed/).
 
+``-k 5Kb8kLf9zgWQnogidDA76Mz_SAMPLE_PRIVATE_KEY_DO_NOT_IMPORT_PL6TsZZY36hWXMssSzNydYXYB9KF``
+
+Self-explanatory
+
 ``-d 3``
 
 Debug level can be 0-3
