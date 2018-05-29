@@ -5,6 +5,7 @@ const argv = require('minimist')(process.argv.slice(2));
 const Logger= require('./lib/Logger.js');
 let logger= new Logger(argv['d']);
 let optimised = argv['gcd'];
+let apiNode = argv['s'];
 
 function weightedAvg(arrValues, arrWeights) {
 
@@ -51,9 +52,9 @@ class Feed {
 		}
 	}
 	async getProducer() {
-		this.producer=await Apis.instance('wss://bitshares.openledger.info/ws', true).init_promise.then(() => {
+		this.producer=await Apis.instance(apiNode, true).init_promise.then(() => {
 			this.Api=Apis.instance();
-			logger.transient('Connected to API node: wss://bitshares.openledger.info/ws');
+			logger.transient('Connected to API node: '+apiNode);
 			return this.Api.db_api().exec( 'get_account_by_name', [this.config.producer] );
 		});
 		return this.producer;

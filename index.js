@@ -16,6 +16,9 @@ var privKey = argv['k'];
 let pKey = PrivateKey.fromWif(privKey);
 let logger= new Logger(argv['d']);
 let confYaml = argv['c'];
+let apiNode = argv['s'];
+let publishFeed = argv['broadcast'];
+
 try {
 	(async  ()=> {
 		//console.log(chalk.white('Loading config file...'));
@@ -36,8 +39,8 @@ try {
 		var prices = await feed.get_prices();
 		printLog(prices);
 		printPrices(prices);
-		Apis.instance('wss://eu.nodes.bitshares.ws', true).init_promise.then((res) => {
-			logger.log('Connected to:'+res[0].network_name+' network');
+		Apis.instance(apiNode, true).init_promise.then(() => {
+			logger.log('Connected to API node: '+ apiNode);
 
 			let tr = new TransactionBuilder();
 
@@ -99,8 +102,9 @@ try {
 			}
 			tr.set_required_fees().then(() => {
 				tr.add_signer(pKey, pKey.toPublicKey().toPublicKeyString());
-				//console.log("serialized transaction:", util.inspect(tr.s);
-				//tr.broadcast();
+				if (publishFeed) {
+					tr.broadcast();
+				}
 			});
 		});
 	})();
@@ -180,8 +184,7 @@ function printLog(prices) {
 	};
 
 	let output = table(tabledata, options);
-	logger.log('Source details:');
-	logger.log('\r\n'+output);
+	logger.log('Source details:\r\n'+output);
 }
 function printPrices(prices) {
 	var tabledata = [['symbol', 'backing', 'new price', 'cer', 'mean', 'median', 'wgt. avg', 'wgt. std(#)', 'blockchain', 'mssr', 'mcr', 'my last price', 'last update']];
@@ -304,8 +307,7 @@ function printPrices(prices) {
 	};
 
 	let output = table(tabledata, options);
-	logger.log('Pricefeed details:');
-	logger.log('\r\n'+output);
+	logger.log('Pricefeed details:\r\n'+output);
 }
 function priceChange(newp, old) {
 	if (old == 0) {
