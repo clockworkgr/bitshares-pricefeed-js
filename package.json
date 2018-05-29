@@ -37,5 +37,10 @@
     "request": "^2.85.0",
     "request-promise-native": "^1.0.5",
     "table": "^4.0.3"
+  },
+  "devDependencies": {
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.11.0"
   }
 }
