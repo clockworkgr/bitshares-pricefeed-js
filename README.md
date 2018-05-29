@@ -35,11 +35,11 @@ Self-explanatory
 
 ``-d 3``
 
-Debug level can be 0-3
-  0: Minimum - Explicit logging & Errors
-  1: Info - 0 + Basic logging
-  2: Verbose - 1 + Verbose logging
-  3: Transient - 2 + Transient messages
+Debug level can be 0-3  
+  0: Minimum - Explicit logging & Errors  
+  1: Info - 0 + Basic logging  
+  2: Verbose - 1 + Verbose logging  
+  3: Transient - 2 + Transient messages  
 
 Recommend 3 at first to be able to see what's going on
 
