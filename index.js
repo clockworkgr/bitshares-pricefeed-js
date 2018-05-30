@@ -104,7 +104,11 @@ try {
 			tr.set_required_fees().then(() => {
 				tr.add_signer(pKey, pKey.toPublicKey().toPublicKeyString());
 				if (publishFeed) {
-					tr.broadcast();
+					logger.log('Publishing feed to blockchain.');
+					tr.broadcast().then(() => { process.exit();});
+				}else{
+					logger.log('\'--broadcast\' flag not set. Not publishing feed.');
+					process.exit();
 				}
 			});
 		});
