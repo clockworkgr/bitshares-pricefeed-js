@@ -75,7 +75,7 @@ try {
 
 				let newprice=price.new_feed;
 				let newcer = newprice.Multiply(price.cef);
-				tr.add_type_operation( 'asset_publish_feed', {
+				let op= {
 					publisher: feed.producer.id,
 					asset_id: newprice.base.asset_id,
 					feed: {
@@ -98,7 +98,8 @@ try {
 								asset_id: newcer.quote.asset_id }
 						}
 					}
-				} );
+				} ;				
+				tr.add_type_operation( 'asset_publish_feed', op);
 			}
 			tr.set_required_fees().then(() => {
 				tr.add_signer(pKey, pKey.toPublicKey().toPublicKeyString());

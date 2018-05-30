@@ -20,7 +20,7 @@ Best way to run (tested under node v8 LTS)
 git clone https://github.com/clockworkgr/bitshares-pricefeed-js
 cd bitshares-pricefeed-js
 npm install
-node index.js -c <path to config yaml> -k <producer_private_key_in_wif> -d <debug_level> -s <api_node_uri> --gcd true --broadcast false
+node index.js -c <path to config yaml> -k <producer_private_key_in_wif> -d <debug_level> -s <api_node_uri> --gcd  --broadcast 
 ```
 
 Switches:
@@ -47,10 +47,10 @@ Recommend 3 at first to be able to see what's going on
 
 Use whatever API node you prefer
 
-``--gcd true``
+``--gcd ``
 
-An optimisation to @xeroc's original script. Uses a GCD method to optimise the final pricefeed. Default is false.
+An optimisation to @xeroc's original script. Uses a GCD method to optimise the final pricefeed. Default (without --gcd flag) uses xeroc's logic.
 
-``--broadcast false``
+``--broadcast``
 
-Set to true in order to publish the actual pricefeed.
+Set this flag in order to publish the actual pricefeed.
