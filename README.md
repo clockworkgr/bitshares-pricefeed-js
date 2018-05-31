@@ -1,18 +1,10 @@
-# bitshares-pricefeed-js
+This is a very simple pricefeed for testing margin mechanics on testnet.
 
-A BitShares pricefeed script in JS ported from @xeroc's bitshares-pricefeed (https://github.com/xeroc/bitshares-pricefeed/)
+Modify testnet.yml with your producer/account name and replace HFPEGTEST with the name of your MPA
 
-* Version: 0.1 Released! *
+The feed is formula based. Currently a time-based sine wave oscillating between 0.9 and 1.1 TEST.
 
-Things that work:
-
-Extern Price Feeds based on the feedsources in ./sources.
-
-Things that don't work:
-
-Everything else. :D
-
-Still a work in progress and under heavy testing. Please report bugs/open issues etc.
+You can change /sources/Testnet.js to add your own formula.
 
 Best way to run (tested under node v8 LTS)
 
@@ -20,37 +12,5 @@ Best way to run (tested under node v8 LTS)
 git clone https://github.com/clockworkgr/bitshares-pricefeed-js
 cd bitshares-pricefeed-js
 npm install
-node index.js -c <path to config yaml> -k <producer_private_key_in_wif> -d <debug_level> -s <api_node_uri> --gcd  --broadcast 
+node index.js -c testnet.yml -k <producer_private_key_in_wif> -d3 -s wss://node.testnet.bitshares.eu --gcd  --broadcast
 ```
-
-Switches:
-
-``-c /path/to/config.yml``
-
-The yaml config file is the exact same format as the one used by xeroc's bitshares-pricefeed (https://github.com/xeroc/bitshares-pricefeed/).
-
-``-k 5Kb8kLf9zgWQnogidDA76Mz_SAMPLE_PRIVATE_KEY_DO_NOT_IMPORT_PL6TsZZY36hWXMssSzNydYXYB9KF``
-
-Self-explanatory
-
-``-d 3``
-
-Debug level can be 0-3  
-  0: Minimum - Explicit logging & Errors  
-  1: Info - 0 + Basic logging  
-  2: Verbose - 1 + Verbose logging  
-  3: Transient - 2 + Transient messages  
-
-Recommend 3 at first to be able to see what's going on
-
-``-s wss://bts-seoul.clockwork.gr``
-
-Use whatever API node you prefer
-
-``--gcd ``
-
-An optimisation to @xeroc's original script. Uses a GCD method to optimise the final pricefeed. Default (without --gcd flag) uses xeroc's logic.
-
-``--broadcast``
-
-Set this flag in order to publish the actual pricefeed.
