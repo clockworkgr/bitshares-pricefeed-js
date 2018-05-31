@@ -74,7 +74,7 @@ try {
 
 
 				let newprice=price.new_feed;
-				let newcer = newprice.Multiply(price.cef);
+				let newcer = newprice.Multiply(price.cef);				
 				let op= {
 					publisher: feed.producer.id,
 					asset_id: newprice.base.asset_id,
@@ -201,6 +201,7 @@ function printPrices(prices) {
 		var last, age;
 		let myprice = feed['price'];
 		let blockchain = new Price(feed['global_feed']['settlement_price']).Float();
+		//let blockchain=1.05;
 		if (feed['current_feed'] != undefined) {
 			last = new Price(feed['current_feed']['settlement_price']).Float();
 			age = moment.tz(feed['current_feed']['date'], 'UTC').fromNow();

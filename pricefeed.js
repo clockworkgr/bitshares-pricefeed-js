@@ -81,23 +81,31 @@ class Feed {
 		if (asset['is_bitasset']==false) {
 			return;
 		}
+		
 		asset['bitasset_data']=await this.Api.db_api().exec( 'get_objects', [[asset['bitasset_data_id']]] ).then((res) => { return res[0]; });
-
+		
 		var price=this.price_result[symbol];
 		var newPrice=price['price'];
+		
 		var current_feed=this.get_my_current_feed(asset);
-		current_feed['settlement_price'].base['precision']=asset.precision;
-		current_feed['settlement_price'].quote['precision']=5;
+		
 		var oldPrice;
-		if ((current_feed!==undefined) && (current_feed['settlement_price']!==undefined)) {
+		if ((current_feed!==undefined) && (current_feed['settlement_price']!==undefined) && (current_feed['settlement_price'].base.asset_id!=current_feed['settlement_price'].quote.asset_id)) {
 			oldPrice=new Price(current_feed['settlement_price']).Float();
+			current_feed['settlement_price'].base['precision']=asset.precision;
+			current_feed['settlement_price'].quote['precision']=5;
 		}else{
-			oldPrice=Infinity;
+			oldPrice=Infinity;			
+			current_feed={};
+			current_feed['settlement_price']={ 'base' : { 'amount': 0, 'asset_id': asset['id'], 'precision' : asset['precision'] }, 'quote':{ 'amount': 0, 'asset_id': '1.3.0', 'precision' : 5 }};
+			
 		}
 		if (optimised) {
 			this.price_result[symbol]['new_feed'] = Price.fromFloat(+newPrice.toFixed(current_feed['settlement_price'].base['precision']), current_feed['settlement_price'].base, current_feed['settlement_price'].quote);
+			
 		} else {
 			this.price_result[symbol]['new_feed'] = Price.fromFloatOld(+newPrice.toFixed(current_feed['settlement_price'].base['precision']), current_feed['settlement_price'].base, current_feed['settlement_price'].quote);
+			
 		}
 		this.price_result[symbol]['priceChange'] = (oldPrice - newPrice) / newPrice * 100.0;
 		this.price_result[symbol]['current_feed'] = current_feed;
