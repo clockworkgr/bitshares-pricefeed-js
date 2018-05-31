@@ -39,6 +39,7 @@ validation-report.json
 
 # config file to ignore
 fox.yaml
+config.yml
 
 # Folders to ignore
 node_modules
