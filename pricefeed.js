@@ -65,11 +65,14 @@ class Feed {
 		for (var feed in feeds) {
 
 			if(feeds[feed][0]==this.producer['id']) {
-				var myfeed=feeds[feed][1][1];
+				let myfeed=feeds[feed][1][1];
 				myfeed['date']=feeds[feed][1][0];
 				return myfeed;
 			}
 		}
+		let myfeed=asset.bitasset_data.current_feed;
+		myfeed['date']=(new Date()).toISOString();
+		return myfeed;
 	}
 	async obtain_price_change(symbol) {
 		var asset=await this.Api.db_api().exec( 'lookup_asset_symbols', [[symbol]] ).then((res)=>{
