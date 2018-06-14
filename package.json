@@ -1,6 +1,6 @@
 {
   "name": "bitshares-pricefeed-js",
-  "version": "0.1",
+  "version": "1.0.0",
   "description": "A BitShares pricefeed script in JS ported from @xeroc's bitshares-pricefeed",
   "main": "index.js",
   "scripts": {
