@@ -71,7 +71,9 @@ class Feed {
 			}
 		}
 		let myfeed=asset.bitasset_data.current_feed;
-		myfeed['date']=(new Date()).toISOString();
+		var date = new Date();
+		var yesterday = date - 1000 * 60 * 60 * 24 * 2;
+		myfeed['date']=( new Date(yesterday)).toISOString();
 		return myfeed;
 	}
 	async obtain_price_change(symbol) {

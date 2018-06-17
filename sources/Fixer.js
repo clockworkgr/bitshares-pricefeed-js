@@ -15,7 +15,7 @@ class Fixer extends FeedSource {
 		for (var bindex=0;bindex<this.options.bases.length;bindex++) {
 			let base=this.options.bases[bindex];
 			feed[base]={};
-			var url = 'http://api.fixer.io/latest?base='+base;
+			var url = 'http://data.fixer.io/api/latest?access_key='+this.options.api_key+'&base='+base;
 			var result = await request(url);
 			result=JSON.parse(result);
 			for (var qindex=0;qindex<this.options.quotes.length;qindex++) {
