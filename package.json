@@ -22,8 +22,9 @@
   },
   "homepage": "https://github.com/clockworkgr/bitshares-pricefeed-js#readme",
   "dependencies": {
+    "ajv": "^6.5.1",
     "bitcoinaverage": "^1.0.0",
-    "bitsharesjs": "^1.5.8",
+    "bitsharesjs": "^1.7.10",
     "chalk": "^2.4.0",
     "fs-extra": "^5.0.0",
     "js-yaml": "^3.11.0",
@@ -39,8 +40,11 @@
     "table": "^4.0.3"
   },
   "devDependencies": {
+    "eslint": "^4.19.1",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.11.0"
+    "eslint-plugin-import": "^2.11.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.9.1"
   }
 }
