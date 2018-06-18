@@ -1,6 +1,7 @@
 const {Apis} = require('bitsharesjs-ws');
 const math = require('mathjs');
 const Price = require('./lib/Price.js');
+const util = require('util');
 const argv = require('minimist')(process.argv.slice(2));
 const Logger= require('./lib/Logger.js');
 let logger= new Logger(argv['d']);
@@ -86,11 +87,23 @@ class Feed {
 		}
 		asset['bitasset_data']=await this.Api.db_api().exec( 'get_objects', [[asset['bitasset_data_id']]] ).then((res) => { return res[0]; });
 
+		var short_backing_asset = await this.Api.db_api().exec( 'lookup_asset_symbols', [[asset['bitasset_data']['options']['short_backing_asset']]] ).then((res)=>{
+			logger.transient('Got backing asset data...');
+			let asset=res[0];
+			return this.Api.db_api().exec( 'get_objects', [[asset.id]] );
+		}).then((assetstats)=> {
+			logger.transient('Got backing asset statistics...');
+			return assetstats[0];
+		});
+		
+		asset['short_backing_asset'] = short_backing_asset;
 		var price=this.price_result[symbol];
 		var newPrice=price['price'];
 		var current_feed=this.get_my_current_feed(asset);
+		
 		current_feed['settlement_price'].base['precision']=asset.precision;
-		current_feed['settlement_price'].quote['precision']=5;
+		//logger.log(util.inspect(asset['bitasset_data'],false,2));
+		current_feed['settlement_price'].quote['precision']=asset['short_backing_asset']['precision'];
 		var oldPrice;
 		if ((current_feed!==undefined) && (current_feed['settlement_price']!==undefined)) {
 			oldPrice=new Price(current_feed['settlement_price']).Float();
@@ -98,15 +111,16 @@ class Feed {
 			oldPrice=Infinity;
 		}
 		if (optimised) {
-			this.price_result[symbol]['new_feed'] = Price.fromFloat(+newPrice.toFixed(current_feed['settlement_price'].base['precision']), current_feed['settlement_price'].base, current_feed['settlement_price'].quote);
+			this.price_result[symbol]['new_feed'] = Price.fromFloat(parseFloat(newPrice).toFixed(current_feed['settlement_price'].base['precision']), current_feed['settlement_price'].base, current_feed['settlement_price'].quote);
 		} else {
-			this.price_result[symbol]['new_feed'] = Price.fromFloatOld(+newPrice.toFixed(current_feed['settlement_price'].base['precision']), current_feed['settlement_price'].base, current_feed['settlement_price'].quote);
+			this.price_result[symbol]['new_feed'] = Price.fromFloatOld(parseFloat(newPrice).toFixed(current_feed['settlement_price'].base['precision']), current_feed['settlement_price'].base, current_feed['settlement_price'].quote);
 		}
 		this.price_result[symbol]['priceChange'] = (oldPrice - newPrice) / newPrice * 100.0;
 		this.price_result[symbol]['current_feed'] = current_feed;
 		this.price_result[symbol]['global_feed'] = asset['bitasset_data']['current_feed'];
 		this.price_result[symbol]['global_feed']['settlement_price'].base['precision']=asset.precision;
-		this.price_result[symbol]['global_feed']['settlement_price'].quote['precision']=5;
+		this.price_result[symbol]['global_feed']['settlement_price'].quote['precision']=asset['short_backing_asset']['precision'];
+		logger.log('1');
 		return;
 	}
 	obtain_flags(symbol) {
@@ -344,10 +358,6 @@ class Feed {
 			logger.verbose('Calculating price for: '+symbol+'...');
 			await this.type_extern(symbol);
 			logger.verbose('Price for: '+symbol+' calculated.');
-		}
-		for (symbol in assets_derive) {
-			//TODO :type_intern not implemented;
-			// this.type_intern(symbol);
 		}
 
 		for (symbol in assets_derive) {
