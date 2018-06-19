@@ -33,6 +33,7 @@
     "moment": "^2.22.1",
     "moment-timezone": "^0.5.16",
     "node-binance-api": "^0.4.27",
+    "node-growl": "^0.1.1",
     "prompt-sync": "^4.1.6",
     "quandl": "0.0.6",
     "request": "^2.85.0",
