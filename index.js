@@ -18,6 +18,7 @@ let logger= new Logger(argv['d']);
 let confYaml = argv['c'];
 let apiNode = argv['s'];
 let publishFeed = argv['broadcast'];
+let skip_critical = argv['skip_critical'];
 
 try {
 	(async  ()=> {
@@ -56,17 +57,22 @@ try {
 					continue;
 				}
 				if (flags.indexOf('over_warn_change')>=0) {
-					if (flags.indexOf('skip_change')==-1) {
+					if (flags.indexOf('skip_change')==-1) {						
 						let includeprice= prompt(chalk.yellow('WARNING:')+' Price change for '+symbol+' ('+price['priceChange']+') above \'warn_change\'. Include in feed (Y/n)?');
 						if ((includeprice=='n') || (includeprice=='N')) {
 							logger.log('Skipping...');
 							continue;
 						}
 					}else{
-						let includeprice= prompt(chalk.red('CRITICAL:')+' Price change for '+symbol+' ('+price['priceChange']+') above \'skip_change\'. Include in feed (y/N)?');
-						if ((includeprice!='y') && (includeprice!='Y')) {
+						if (skip_critical) {
 							logger.log('Skipping...');
 							continue;
+						}else{
+							let includeprice= prompt(chalk.red('CRITICAL:')+' Price change for '+symbol+' ('+price['priceChange']+') above \'skip_change\'. Include in feed (y/N)?');
+							if ((includeprice!='y') && (includeprice!='Y')) {
+								logger.log('Skipping...');
+								continue;
+							}
 						}
 					}
 				}
