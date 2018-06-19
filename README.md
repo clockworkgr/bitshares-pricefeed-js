@@ -2,7 +2,7 @@
 
 A BitShares pricefeed script in JS ported from @xeroc's bitshares-pricefeed (https://github.com/xeroc/bitshares-pricefeed/)
 
-* Version: 0.1 Released! *
+*Version: 1.1.1 Released!*
 
 Things that work:
 
@@ -20,7 +20,7 @@ Best way to run (tested under node v8 LTS)
 git clone https://github.com/clockworkgr/bitshares-pricefeed-js
 cd bitshares-pricefeed-js
 npm install
-node index.js -c <path to config yaml> -k <producer_private_key_in_wif> -d <debug_level> -s <api_node_uri> --gcd  --broadcast 
+node index.js -c <path to config yaml> -k <producer_private_key_in_wif> -d <debug_level> -s <api_node_uri> --gcd --broadcast --skip_critical
 ```
 
 Switches:
@@ -54,3 +54,7 @@ An optimisation to @xeroc's original script. Uses a GCD method to optimise the f
 ``--broadcast``
 
 Set this flag in order to publish the actual pricefeed.
+
+``--skip_critical``
+
+Set this flag in order to skip publishing feeds that are over skip_change percentage change (in config) without prompt.
