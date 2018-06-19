@@ -104,10 +104,15 @@ class Feed {
 		current_feed['settlement_price'].base['precision']=asset.precision;
 		current_feed['settlement_price'].quote['precision']=asset['short_backing_asset']['precision'];
 		var oldPrice;
-		if ((current_feed!==undefined) && (current_feed['settlement_price']!==undefined)) {
+
+		if ((current_feed!==undefined) && (current_feed['settlement_price']!==undefined) && (current_feed['settlement_price'].base.asset_id!=current_feed['settlement_price'].quote.asset_id)) {
 			oldPrice=new Price(current_feed['settlement_price']).Float();
+			current_feed['settlement_price'].base['precision']=asset.precision;
+			current_feed['settlement_price'].quote['precision']=asset['short_backing_asset']['precision'];
 		}else{
 			oldPrice=Infinity;
+			current_feed={};
+			current_feed['settlement_price']={ 'base' : { 'amount': 0, 'asset_id': asset['id'], 'precision' : asset['precision'] }, 'quote':{ 'amount': 0, 'asset_id': '1.3.0', 'precision' : asset['short_backing_asset']['precision'] }};
 		}
 		if (optimised) {
 			this.price_result[symbol]['new_feed'] = Price.fromFloat(+parseFloat(newPrice).toFixed(current_feed['settlement_price'].base['precision']), current_feed['settlement_price'].base, current_feed['settlement_price'].quote);
