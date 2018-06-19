@@ -88,11 +88,21 @@ class Feed {
 		}
 		asset['bitasset_data']=await this.Api.db_api().exec( 'get_objects', [[asset['bitasset_data_id']]] ).then((res) => { return res[0]; });
 
+		var short_backing_asset = await this.Api.db_api().exec( 'lookup_asset_symbols', [[asset['bitasset_data']['options']['short_backing_asset']]] ).then((res)=>{
+			logger.transient('Got backing asset data...');
+			let asset=res[0];
+			return this.Api.db_api().exec( 'get_objects', [[asset.id]] );
+		}).then((assetstats)=> {
+			logger.transient('Got backing asset statistics...');
+			return assetstats[0];
+		});
+		
+		asset['short_backing_asset'] = short_backing_asset;
 		var price=this.price_result[symbol];
 		var newPrice=price['price'];
 		var current_feed=this.get_my_current_feed(asset);
 		current_feed['settlement_price'].base['precision']=asset.precision;
-		current_feed['settlement_price'].quote['precision']=5;
+		current_feed['settlement_price'].quote['precision']=asset['short_backing_asset']['precision'];
 		var oldPrice;
 		if ((current_feed!==undefined) && (current_feed['settlement_price']!==undefined)) {
 			oldPrice=new Price(current_feed['settlement_price']).Float();
@@ -108,7 +118,7 @@ class Feed {
 		this.price_result[symbol]['current_feed'] = current_feed;
 		this.price_result[symbol]['global_feed'] = asset['bitasset_data']['current_feed'];
 		this.price_result[symbol]['global_feed']['settlement_price'].base['precision']=asset.precision;
-		this.price_result[symbol]['global_feed']['settlement_price'].quote['precision']=5;
+		this.price_result[symbol]['global_feed']['settlement_price'].quote['precision']=asset['short_backing_asset']['precision'];
 		return;
 	}
 	obtain_flags(symbol) {
@@ -346,10 +356,6 @@ class Feed {
 			logger.verbose('Calculating price for: '+symbol+'...');
 			await this.type_extern(symbol);
 			logger.verbose('Price for: '+symbol+' calculated.');
-		}
-		for (symbol in assets_derive) {
-			//TODO :type_intern not implemented;
-			// this.type_intern(symbol);
 		}
 
 		for (symbol in assets_derive) {
