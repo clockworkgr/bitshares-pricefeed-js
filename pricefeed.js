@@ -100,9 +100,9 @@ class Feed {
 			oldPrice=Infinity;
 		}
 		if (optimised) {
-			this.price_result[symbol]['new_feed'] = Price.fromFloat(+newPrice.toFixed(current_feed['settlement_price'].base['precision']), current_feed['settlement_price'].base, current_feed['settlement_price'].quote);
+			this.price_result[symbol]['new_feed'] = Price.fromFloat(+parseFloat(newPrice).toFixed(current_feed['settlement_price'].base['precision']), current_feed['settlement_price'].base, current_feed['settlement_price'].quote);
 		} else {
-			this.price_result[symbol]['new_feed'] = Price.fromFloatOld(+newPrice.toFixed(current_feed['settlement_price'].base['precision']), current_feed['settlement_price'].base, current_feed['settlement_price'].quote);
+			this.price_result[symbol]['new_feed'] = Price.fromFloatOld(+parseFloat(newPrice).toFixed(current_feed['settlement_price'].base['precision']), current_feed['settlement_price'].base, current_feed['settlement_price'].quote);
 		}
 		this.price_result[symbol]['priceChange'] = (oldPrice - newPrice) / newPrice * 100.0;
 		this.price_result[symbol]['current_feed'] = current_feed;
