@@ -66,8 +66,7 @@ class SettleGraphene extends FeedSource {
 						[asset.id]
 					]);
 				}).then((assetstats) => {
-					logger.transient('Got backing asset statistics...');					
-					this.Api.close();
+					logger.transient('Got backing asset statistics...');
 					return assetstats[0];
 				});
 				var backing_symbol = short_backing_asset['symbol'];
