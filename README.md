@@ -58,3 +58,10 @@ Set this flag in order to publish the actual pricefeed.
 ``--skip_critical``
 
 Set this flag in order to skip publishing feeds that are over skip_change percentage change (in config) without prompt.
+
+
+-------------------------------------------------------------------------------------------------------------------
+**DONATIONS WELCOME**
+@
+BTS: clockwork
+EOS: clockworkbts
