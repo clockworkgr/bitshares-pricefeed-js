@@ -1,7 +1,7 @@
 const FeedSource =require('./FeedSource.js');
 const request = require('request-promise-native');
 
-class Aex extends FeedSource {
+class Coinegg extends FeedSource {
     constructor(config) {
         super(config);
         this.init();
@@ -24,21 +24,16 @@ class Aex extends FeedSource {
                 if (quote==base) {
                     continue;
                 }
-                var url =  {
-                    uri: 'http://api.aex.com/ticker.php?c='+quote.toLowerCase()+'&mk_type='+base.toLowerCase(),
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
-                    }
-                };
-                
-                var result= await request(url);                
+                var url = 'https://api.coinegg.im/api/v1/ticker/region/'+base.toLowerCase()+'?coin='+quote.toLowerCase();
+                var result= await request(url);
                 result=JSON.parse(result);
                 if((self.options.quoteNames!=undefined) && (self.options.quoteNames[quote]!=undefined)) {
-                    quote=this.options.quoteNames[quote];
+                    quote=self.options.quoteNames[quote];
                 }
+                
                 feed[base][quote]= {
-                    'price': result['ticker']['last'],
-                    'volume': result['ticker']['vol']*self.options.scaleVolumeBy
+                    'price': parseFloat(result.last),
+                    'volume': parseFloat(result.vol)
                 };
             }
         }
@@ -46,4 +41,4 @@ class Aex extends FeedSource {
         return feed;
     }
 }
-module.exports=Aex;
+module.exports=Coinegg;

@@ -1,7 +1,7 @@
 const FeedSource =require('./FeedSource.js');
 const request = require('request-promise-native');
 
-class Aex extends FeedSource {
+class Coindesk extends FeedSource {
     constructor(config) {
         super(config);
         this.init();
@@ -24,21 +24,18 @@ class Aex extends FeedSource {
                 if (quote==base) {
                     continue;
                 }
-                var url =  {
-                    uri: 'http://api.aex.com/ticker.php?c='+quote.toLowerCase()+'&mk_type='+base.toLowerCase(),
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
-                    }
-                };
-                
-                var result= await request(url);                
+                if (quote!='BTC') {
+                    continue;
+                }
+                var url = 'https://api.coindesk.com/v1/bpi/currentprice/'+base.toUpperCase()+'.json';
+                var result= await request(url);
                 result=JSON.parse(result);
                 if((self.options.quoteNames!=undefined) && (self.options.quoteNames[quote]!=undefined)) {
-                    quote=this.options.quoteNames[quote];
+                    quote=self.options.quoteNames[quote];
                 }
                 feed[base][quote]= {
-                    'price': result['ticker']['last'],
-                    'volume': result['ticker']['vol']*self.options.scaleVolumeBy
+                    'price': result.bpi['base'].rate_float,
+                    'volume': 1
                 };
             }
         }
@@ -46,4 +43,4 @@ class Aex extends FeedSource {
         return feed;
     }
 }
-module.exports=Aex;
+module.exports=Coindesk;
