@@ -307,17 +307,17 @@ class Feed {
         return this.price_result;
     }
     calc_premium() {
-        let premium=this.feed['zb']['QC']['BITCNY']['price'];
+        let premium=parseFloat(this.feed['zb']['QC']['BITCNY']['price']);
         if (premium<1) {
             premium=1;
         }
         if (premium>1.05) {
             premium=1.05;
         }
-        premium=premium+0.002;
-        let scale=((premium-1)*10) +0.3;
+        premium=(premium+0.002);
+        let scale=((premium-1)*10) +1.3;
         delete(this.feed['zb']['QC']);
-        this.premium=Math.pow(premium,scale);        
+        this.premium=Math.pow(premium,scale);
     }
     derive3Markets(asset,target_symbol) {
 
@@ -420,9 +420,9 @@ class Feed {
         });
         var backing_symbol = short_backing_asset['symbol'];
         asset['short_backing_asset'] = short_backing_asset;
-
+        
         if ((this.assetconf(symbol, 'type')!='extern') &&  (this.assetconf(symbol, 'type')!='alias')) {
-
+            
             return;
         }
         var alias;
