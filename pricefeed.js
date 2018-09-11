@@ -314,6 +314,7 @@ class Feed {
         if (premium>1.05) {
             premium=1.05;
         }
+        premium=premium+0.002;
         let scale=((premium-1)*10) +0.3;
         delete(this.feed['zb']['QC']);
         this.premium=Math.pow(premium,scale);        
