@@ -276,6 +276,9 @@ class Feed {
     derive2Markets(asset,target_symbol) {
         var symbol=asset['symbol'];
         var premium=this.premium;
+        if (!this.assetconf(symbol, 'use_premium')) {
+            premium=1;
+        }
         for (var iaidx in this.config['intermediate_assets']) {
             var interasset=this.config['intermediate_assets'][iaidx];
             if (interasset==symbol) {
@@ -293,6 +296,7 @@ class Feed {
                             continue;
                         }
                         var sources=this.data[interasset][target_symbol][idx]['sources'].concat(ratio['sources']);
+
                         this.addPrice(symbol,target_symbol,this.data[interasset][target_symbol][idx]['price']*ratio['price']*premium,this.data[interasset][target_symbol][idx]['volume']*ratio['volume'],sources);
                     }
                 }
