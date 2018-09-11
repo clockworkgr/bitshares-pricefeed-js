@@ -314,8 +314,9 @@ class Feed {
         if (premium>1.05) {
             premium=1.05;
         }
+        let scale=((premium-1)*10) +0.3;
         delete(this.feed['zb']['QC']);
-        this.premium=premium;        
+        this.premium=Math.pow(premium,scale);        
     }
     derive3Markets(asset,target_symbol) {
 
