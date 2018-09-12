@@ -296,8 +296,18 @@ class Feed {
                             continue;
                         }
                         var sources=this.data[interasset][target_symbol][idx]['sources'].concat(ratio['sources']);
-
-                        this.addPrice(symbol,target_symbol,this.data[interasset][target_symbol][idx]['price']*ratio['price']*premium,this.data[interasset][target_symbol][idx]['volume']*ratio['volume'],sources);
+                        if (symbol=='CNY') {
+                            if (this.data[interasset][target_symbol][idx]['price']*ratio['price']>=this.feed['settlecny']['CNY']['BTS'].price) {
+                                this.addPrice(symbol,target_symbol,this.data[interasset][target_symbol][idx]['price']*ratio['price']*premium,this.data[interasset][target_symbol][idx]['volume']*ratio['volume'],sources);
+                            }else{
+                                let marketdiff=(this.feed['settlecny']['CNY']['BTS'].price-this.data[interasset][target_symbol][idx]['price']*ratio['price'])/(this.data[interasset][target_symbol][idx]['price']*ratio['price']);
+                                let dampen = Math.pow(1-marketdiff,2);
+                                let new_premium=1+(premium -1)*dampen;
+                                this.addPrice(symbol,target_symbol,this.feed['settlecny']['CNY']['BTS'].price*new_premium,this.data[interasset][target_symbol][idx]['volume']*ratio['volume'],sources);
+                            }
+                        }else{
+                            this.addPrice(symbol,target_symbol,this.data[interasset][target_symbol][idx]['price']*ratio['price']*premium,this.data[interasset][target_symbol][idx]['volume']*ratio['volume'],sources);
+                        }
                     }
                 }
             }
@@ -318,6 +328,7 @@ class Feed {
         let scale=((premium-1)*10) +1.1;
         delete(this.feed['zb']['QC']);
         this.premium=Math.pow(premium,scale);
+        
     }
     derive3Markets(asset,target_symbol) {
 
@@ -495,6 +506,7 @@ class Feed {
         if ((this.config['assets'][symbol]!==undefined) ) {
             var cef = this.assetconf(symbol,'core_exchange_factor');
         }
+        
         this.price_result[symbol] = {
             'price': p,
             'cer': cer,
