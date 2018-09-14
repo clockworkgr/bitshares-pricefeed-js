@@ -3,6 +3,7 @@ const math = require('mathjs');
 const Price = require('./lib/Price.js');
 const argv = require('minimist')(process.argv.slice(2));
 const Logger= require('./lib/Logger.js');
+const fs = require('fs');
 let logger= new Logger(argv['d']);
 let optimised = argv['gcd'];
 let apiNode = argv['s'];
@@ -38,7 +39,12 @@ class Feed {
         this.price_result={};
         this.reset();
         this.premium=1;
-
+        this.history={};
+        try {
+            this.history = fs.readFileSync('history.json');
+        } catch (err) {
+            this.history={};
+        }
     }
     async init() {
         return this.getProducer();
@@ -296,6 +302,7 @@ class Feed {
                             continue;
                         }
                         var sources=this.data[interasset][target_symbol][idx]['sources'].concat(ratio['sources']);
+                        /*
                         if (symbol=='CNY') {
                             if (this.data[interasset][target_symbol][idx]['price']*ratio['price']>=this.feed['settlecny']['CNY']['BTS'].price) {
                                 this.addPrice(symbol,target_symbol,this.data[interasset][target_symbol][idx]['price']*ratio['price']*premium,this.data[interasset][target_symbol][idx]['volume']*ratio['volume'],sources);
@@ -304,10 +311,10 @@ class Feed {
                                 let dampen = Math.pow(1-marketdiff,2);
                                 let new_premium=1+(premium -1)*dampen;
                                 this.addPrice(symbol,target_symbol,this.feed['settlecny']['CNY']['BTS'].price*new_premium,this.data[interasset][target_symbol][idx]['volume']*ratio['volume'],sources);
-                            }
-                        }else{
-                            this.addPrice(symbol,target_symbol,this.data[interasset][target_symbol][idx]['price']*ratio['price']*premium,this.data[interasset][target_symbol][idx]['volume']*ratio['volume'],sources);
-                        }
+                            }*/
+                        //}else{
+                        this.addPrice(symbol,target_symbol,this.data[interasset][target_symbol][idx]['price']*ratio['price']*premium,this.data[interasset][target_symbol][idx]['volume']*ratio['volume'],sources);
+                        //}
                     }
                 }
             }
@@ -506,7 +513,35 @@ class Feed {
         if ((this.config['assets'][symbol]!==undefined) ) {
             var cef = this.assetconf(symbol,'core_exchange_factor');
         }
-        
+        if (symbol=='CNY') {        
+            let new_history={};
+            new_history.marketmean=price_mean;
+            new_history.marketmedian=price_median;
+            new_history.marketweighted=price_weighted;
+            let premium=this.premium;
+            if (this.feed['settlecny']['CNY']['BTS'].price>price_weighted) {
+                let marketdiff=(this.feed['settlecny']['CNY']['BTS'].price-price_weighted)/(price_weighted);
+                let dampen = Math.pow(1-marketdiff,2);
+                let new_premium=1+(premium -1)*dampen;                
+                new_history.marketweightedprem=this.feed['settlecny']['CNY']['BTS'].price*new_premium;
+                cer=cer*new_premium;
+            }else{       
+                let new_premium=premium;
+                new_history.marketweightedprem=price_weighted*new_premium;
+                cer=cer*new_premium;
+            }
+            let ch1=(new_history.marketweightedprem-this.history.marketweightedprem)/this.history.marketweightedprem;
+            let ch2=(new_history.marketweighted-this.history.marketweighted)/this.history.marketweighted;
+            if (ch1<0) {
+                if (ch1<ch2) {
+                    new_history.marketweightedprem=this.history.marketweightedprem+ch2*this.history.marketweightedprem;
+                    cer=new_history.marketweightedprem*1.2;
+                }
+            }
+            fs.writeFileSync('history.json',JSON.stringify(new_history));
+            price_weighted=new_history.marketweightedprem;
+            p=price_weighted;
+        }
         this.price_result[symbol] = {
             'price': p,
             'cer': cer,
